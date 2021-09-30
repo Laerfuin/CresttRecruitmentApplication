@@ -21,13 +21,15 @@ namespace CresttRecruitmentApplication.Tests
     {
         private Mock<IEmployeeReadRepository> _employeeRepository;
         private readonly List<Employee> fakeEmployeeStore = new();
-        private Guid existingEmployeeKey;
 
         [SetUp]
         public void Setup()
         {
             _employeeRepository = new Mock<IEmployeeReadRepository>();
+        }
 
+        private void AdditionalSetUp()
+        {
             var utilityServiceMock = new Mock<IEmployeeUtilityService>();
 
             utilityServiceMock.Setup(a => a.GetFreeID()).Returns(1);
@@ -44,13 +46,15 @@ namespace CresttRecruitmentApplication.Tests
             var createdEmployee = employeeBuilder.ToNewEmployee();
 
             fakeEmployeeStore.Add(createdEmployee);
-
-            existingEmployeeKey = createdEmployee.Key;
         }
 
         [Test]
         public async Task GetAllEmployeeHandler_ShouldReturnOneRecord()
         {
+            AdditionalSetUp();
+
+            var existingEmployeeKey = fakeEmployeeStore.First().Key;
+
             _employeeRepository
                 .Setup(a => a.GetAll())
                 .Returns(Task.Run(() =>
@@ -69,8 +73,12 @@ namespace CresttRecruitmentApplication.Tests
         }
 
         [Test]
-        public async Task GetAllEmployeeHandler_WithCorrectKey_ShouldPass()
+        public async Task GetEmployeeByKeyHandler_WithCorrectKey_ShouldPass()
         {
+            AdditionalSetUp();
+
+            var existingEmployeeKey = fakeEmployeeStore.First().Key;
+
             _employeeRepository
                 .Setup(a => a.GetById(existingEmployeeKey))
                 .Returns(Task.Run(() =>
@@ -89,7 +97,7 @@ namespace CresttRecruitmentApplication.Tests
         }
 
         [Test]
-        public void GetAllEmployeeHandler_WithIncorrectKey_ShouldFail()
+        public void GetEmployeeByKeyHandler_WithIncorrectKey_ShouldFail()
         {
             var incorrectKey = new Guid();
 

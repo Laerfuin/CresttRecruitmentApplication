@@ -35,11 +35,10 @@ namespace CresttRecruitmentApplication.Application.QueryHandlers
             _employeeBuilder.SetDateOfBirth(request.Values.DateOfBirth);
             _employeeBuilder.SetGender((GenderType)request.Values.Gender);
 
-            var employee = _employeeBuilder.ToModifiedEmployee(
-                (await existingEmployee).Key,
-                (await existingEmployee).ID);
+            var dbEmployee = await existingEmployee;
+            var parsedEmployee = _employeeBuilder.ToModifiedEmployee(dbEmployee.Key, dbEmployee.ID);
 
-            await _employeeWriteRepository.Modify(employee);
+            await _employeeWriteRepository.Modify(parsedEmployee);
 
             return new Unit();
         }
