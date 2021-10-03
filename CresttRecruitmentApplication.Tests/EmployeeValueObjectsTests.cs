@@ -10,19 +10,19 @@ namespace CresttRecruitmentApplication.Tests
     public class EmployeeValueObjectsTests
     {
         [Test]
-        public void EmployeeID_CreateWithCorrectValue_ShouldPass()
+        public void EmployeeID_CreateWithCorrectStringValue_ShouldPass()
         {
             Assert.DoesNotThrow(() => new EmployeeID("00000001"));
         }
 
         [Test]
-        public void EmployeeID_CreateWithNullValue_ShouldFail()
+        public void EmployeeID_CreateWithNullStringValue_ShouldFail()
         {
             Assert.Throws(typeof(ArgumentNullException), () => new EmployeeID(null));
         }
 
         [Test]
-        public void EmployeeID_CreateWithWrongSizedValue_ShouldFail()
+        public void EmployeeID_CreateWithWrongSizedStringValue_ShouldFail()
         {
             Assert.Throws(typeof(ArgumentException), () => new EmployeeID("000000000000000000000001"));
         }
@@ -31,6 +31,18 @@ namespace CresttRecruitmentApplication.Tests
         public void EmployeeID_CreateWithLetters_ShouldFail()
         {
             Assert.Throws(typeof(ArgumentException), () => new EmployeeID("0dsd0001"));
+        }
+
+        [Test]
+        public void EmployeeID_CreateWithCorrectNumericValue_ShouldPass()
+        {
+            Assert.DoesNotThrow(() => new EmployeeID(763));
+        }
+
+        [Test]
+        public void EmployeeID_CreateWithWrongSizedNumericValue_ShouldFail()
+        {
+            Assert.Throws(typeof(ArgumentException), () => new EmployeeID(199999999));
         }
 
         [Test]
@@ -46,27 +58,27 @@ namespace CresttRecruitmentApplication.Tests
         }
 
         [Test]
-        public void EmployeePesel_CreateWithCorrectValue_ShouldPass()
+        public void EmployeePeselNumber_CreateWithCorrectValue_ShouldPass()
         {
-            Assert.DoesNotThrow(() => new EmployeePesel("12345678912"));
+            Assert.DoesNotThrow(() => new EmployeePeselNumber("12345678912"));
         }
 
         [Test]
-        public void EmployeePesel_CreateWithNullValue_ShouldFail()
+        public void EmployeePeselNumber_CreateWithNullValue_ShouldFail()
         {
-            Assert.Throws(typeof(ArgumentNullException), () => new EmployeePesel(null));
+            Assert.Throws(typeof(ArgumentNullException), () => new EmployeePeselNumber(null));
         }
 
         [Test]
-        public void EmployeePesel_CreateWithWrongSizedValue_ShouldFail()
+        public void EmployeePeselNumber_CreateWithWrongSizedValue_ShouldFail()
         {
-            Assert.Throws(typeof(ArgumentException), () => new EmployeePesel("234234"));
+            Assert.Throws(typeof(ArgumentException), () => new EmployeePeselNumber("234234"));
         }
 
         [Test]
-        public void EmployeePesel_CreateWithLetters_ShouldFail()
+        public void EmployeePeselNumber_CreateWithLetters_ShouldFail()
         {
-            Assert.Throws(typeof(ArgumentException), () => new EmployeePesel("563816dg4hw"));
+            Assert.Throws(typeof(ArgumentException), () => new EmployeePeselNumber("563816dg4hw"));
         }
 
         [Test]
@@ -75,6 +87,14 @@ namespace CresttRecruitmentApplication.Tests
             var correctValue = "Jan";
 
             Assert.DoesNotThrow(() => new EmployeeName(correctValue));
+        }
+
+        [Test]
+        public void Employee_CreateEmployeeWithMissingValues_ShouldThrowAnException()
+        {
+            Assert.Throws(
+                typeof(ArgumentNullException),
+                () => new Employee(new Guid(), null, null, null, null, null, null));
         }
 
         [Test]

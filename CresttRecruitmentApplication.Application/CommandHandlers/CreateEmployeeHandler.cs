@@ -1,6 +1,6 @@
 ﻿using CresttRecruitmentApplication.Application.Commands;
-using CresttRecruitmentApplication.Domain.Builders.Interfaces;
 using CresttRecruitmentApplication.Domain.Enums;
+using CresttRecruitmentApplication.Domain.Models.Employee;
 using CresttRecruitmentApplication.Domain.Repositories.Interfaces;
 using MediatR;
 using System;
@@ -11,30 +11,41 @@ namespace CresttRecruitmentApplication.Application.QueryHandlers
 {
     public class CreateEmployeeHandler : IRequestHandler<CreateEmployeeCommand, Guid>
     {
-        private readonly IEmployeeWriteRepository _employeeRepository;
-        private readonly IEmployeeBuilder _employeeBuilder;
+        private readonly IEmployeeWriteRepository _employeeWriteRepository;
+        private readonly IEmployeeUtilityRepository _employeeUtilityRepository;
 
         public CreateEmployeeHandler(
-            IEmployeeWriteRepository employeeRepository,
-            IEmployeeBuilder employeeBuilder)
+            IEmployeeWriteRepository employeeWriteRepository,
+            IEmployeeUtilityRepository employeeUtilityRepository)
         {
-            _employeeBuilder = employeeBuilder;
-            _employeeRepository = employeeRepository;
+            _employeeWriteRepository = employeeWriteRepository;
+            _employeeUtilityRepository = employeeUtilityRepository;
         }
 
         public async Task<Guid> Handle(CreateEmployeeCommand request, CancellationToken cancellationToken)
         {
-            _employeeBuilder.SetName(request.Values.Name);
-            _employeeBuilder.SetPesel(request.Values.Pesel);
-            _employeeBuilder.SetLastName(request.Values.LastName);
-            _employeeBuilder.SetDateOfBirth(request.Values.DateOfBirth);
-            _employeeBuilder.SetGender((GenderType)request.Values.Gender);
+            if (_employeeUtilityRepository.CheckIfPeselNumberIsTaken(request.Values.Pesel))
+                throw new ArgumentException($"Pesel {request.Values.Pesel} is taken");
 
-            var employee = _employeeBuilder.ToNewEmployee();
+            var id = new EmployeeID(_employeeUtilityRepository.GetFreeID());
+            var name = new EmployeeName(request.Values.Name);
+            var peselNumber = new EmployeePeselNumber(request.Values.Pesel);
+            var lastName = new EmployeeLastName(request.Values.LastName);
+            var dateOfBirth = new EmployeeDateOfBirth(request.Values.DateOfBirth);
+            var gender = new EmployeeGender((GenderType)request.Values.Gender);
 
-            await _employeeRepository.Create(employee);
+            var model = new Employee(
+                Guid.NewGuid(),
+                id,
+                peselNumber,
+                dateOfBirth,
+                lastName,
+                name,
+                gender);
 
-            return employee.Key;
+            await _employeeWriteRepository.Create(model);
+
+            return model.Key;
         }
     }
 }

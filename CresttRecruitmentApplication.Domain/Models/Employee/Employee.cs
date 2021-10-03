@@ -4,9 +4,9 @@ namespace CresttRecruitmentApplication.Domain.Models.Employee
 {
     public class Employee
     {
-        internal Employee(Guid key,
+        public Employee(Guid key,
                         EmployeeID id,
-                        EmployeePesel pesel,
+                        EmployeePeselNumber pesel,
                         EmployeeDateOfBirth dateOfBirth,
                         EmployeeLastName lastName,
                         EmployeeName name,
@@ -25,7 +25,7 @@ namespace CresttRecruitmentApplication.Domain.Models.Employee
         public EmployeeID ID { get; }
         public EmployeeGender Gender { get; }
         public EmployeeName Name { get; }
-        public EmployeePesel Pesel { get; }
+        public EmployeePeselNumber Pesel { get; }
         public EmployeeLastName LastName { get; }
         public EmployeeDateOfBirth DateOfBirth { get; }
     }

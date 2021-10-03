@@ -1,6 +1,6 @@
 ﻿using CresttRecruitmentApplication.Application.Commands;
-using CresttRecruitmentApplication.Domain.Builders.Interfaces;
 using CresttRecruitmentApplication.Domain.Enums;
+using CresttRecruitmentApplication.Domain.Models.Employee;
 using CresttRecruitmentApplication.Domain.Repositories.Interfaces;
 using MediatR;
 using System;
@@ -13,32 +13,45 @@ namespace CresttRecruitmentApplication.Application.QueryHandlers
     {
         private readonly IEmployeeReadRepository _employeeReadRepository;
         private readonly IEmployeeWriteRepository _employeeWriteRepository;
-        private readonly IEmployeeBuilder _employeeBuilder;
+        private readonly IEmployeeUtilityRepository _employeeUtilityRepository;
 
         public ModifyEmployeeHandler(
-            IEmployeeBuilder employeeBuilder,
             IEmployeeReadRepository employeeReadRepository,
-            IEmployeeWriteRepository employeeWriteRepository)
+            IEmployeeWriteRepository employeeWriteRepository,
+            IEmployeeUtilityRepository employeeUtilityRepository)
         {
-            _employeeBuilder = employeeBuilder;
             _employeeReadRepository = employeeReadRepository;
             _employeeWriteRepository = employeeWriteRepository;
+            _employeeUtilityRepository = employeeUtilityRepository;
         }
 
         public async Task<Unit> Handle(ModifyEmployeeCommand request, CancellationToken cancellationToken)
         {
-            var existingEmployee = _employeeReadRepository.GetById(new Guid(request.Values.Key));
+            var existingValue = await _employeeReadRepository.GetById(new Guid(request.Values.Key));
 
-            _employeeBuilder.SetName(request.Values.Name);
-            _employeeBuilder.SetPesel(request.Values.Pesel);
-            _employeeBuilder.SetLastName(request.Values.LastName);
-            _employeeBuilder.SetDateOfBirth(request.Values.DateOfBirth);
-            _employeeBuilder.SetGender((GenderType)request.Values.Gender);
+            var peselNumber = new EmployeePeselNumber(request.Values.Pesel);
 
-            var dbEmployee = await existingEmployee;
-            var parsedEmployee = _employeeBuilder.ToModifiedEmployee(dbEmployee.Key, dbEmployee.ID);
+            if (!peselNumber.Equals(existingValue.Pesel)
+                && _employeeUtilityRepository.CheckIfPeselNumberIsTaken(request.Values.Pesel))
+            {
+                throw new ArgumentException($"Pesel {request.Values.Pesel} is taken");
+            }
 
-            await _employeeWriteRepository.Modify(parsedEmployee);
+            var name = new EmployeeName(request.Values.Name);
+            var lastName = new EmployeeLastName(request.Values.LastName);
+            var dateOfBirth = new EmployeeDateOfBirth(request.Values.DateOfBirth);
+            var gender = new EmployeeGender((GenderType)request.Values.Gender);
+
+            var model = new Employee(
+                existingValue.Key,
+                existingValue.ID,
+                peselNumber,
+                dateOfBirth,
+                lastName,
+                name,
+                gender);
+
+            await _employeeWriteRepository.Modify(model);
 
             return new Unit();
         }

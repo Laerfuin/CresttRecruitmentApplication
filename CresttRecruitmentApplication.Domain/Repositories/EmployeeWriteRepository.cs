@@ -5,9 +5,9 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CresttRecruitmentApplication.Domain.Repositories.Implementation
+namespace CresttRecruitmentApplication.Domain.Repositories
 {
-    public class EmployeeWriteRepository : IEmployeeWriteRepository
+    internal class EmployeeWriteRepository : IEmployeeWriteRepository
     {
         public async Task Create(Employee value)
         {

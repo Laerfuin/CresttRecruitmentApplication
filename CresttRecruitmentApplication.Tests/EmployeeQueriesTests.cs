@@ -1,10 +1,8 @@
 ﻿using CresttRecruitmentApplication.Application.Queries;
 using CresttRecruitmentApplication.Application.QueryHandlers;
-using CresttRecruitmentApplication.Domain.Builders.Implementation;
 using CresttRecruitmentApplication.Domain.Enums;
 using CresttRecruitmentApplication.Domain.Models.Employee;
 using CresttRecruitmentApplication.Domain.Repositories.Interfaces;
-using CresttRecruitmentApplication.Domain.Services.Interfaces;
 using Moq;
 using NUnit.Framework;
 using System;
@@ -30,22 +28,23 @@ namespace CresttRecruitmentApplication.Tests
 
         private void AdditionalSetUp()
         {
-            var utilityServiceMock = new Mock<IEmployeeUtilityService>();
+            var id = new EmployeeID(1);
+            var name = new EmployeeName("Jan");
+            var peselNumber = new EmployeePeselNumber("12345678912");
+            var lastName = new EmployeeLastName("Kowalski");
+            var dateOfBirth = new EmployeeDateOfBirth(DateTime.UtcNow);
+            var gender = new EmployeeGender(GenderType.Female);
 
-            utilityServiceMock.Setup(a => a.GetFreeID()).Returns(1);
+            var model = new Employee(
+                Guid.NewGuid(),
+                id,
+                peselNumber,
+                dateOfBirth,
+                lastName,
+                name,
+                gender);
 
-            var employeeBuilder = new EmployeeBuilder(utilityServiceMock.Object);
-
-            employeeBuilder
-                .SetDateOfBirth(DateTime.UtcNow)
-                .SetGender(GenderType.Female)
-                .SetLastName("Kowalski")
-                .SetName("Jan")
-                .SetPesel("12345678912");
-
-            var createdEmployee = employeeBuilder.ToNewEmployee();
-
-            fakeEmployeeStore.Add(createdEmployee);
+            fakeEmployeeStore.Add(model);
         }
 
         [Test]

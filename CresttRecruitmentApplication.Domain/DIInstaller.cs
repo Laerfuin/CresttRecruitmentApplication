@@ -1,9 +1,5 @@
-﻿using CresttRecruitmentApplication.Domain.Builders.Implementation;
-using CresttRecruitmentApplication.Domain.Builders.Interfaces;
-using CresttRecruitmentApplication.Domain.Repositories.Implementation;
+﻿using CresttRecruitmentApplication.Domain.Repositories;
 using CresttRecruitmentApplication.Domain.Repositories.Interfaces;
-using CresttRecruitmentApplication.Domain.Services.Implementation;
-using CresttRecruitmentApplication.Domain.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CresttRecruitmentApplication.Application
@@ -14,9 +10,7 @@ namespace CresttRecruitmentApplication.Application
         {
             services.AddSingleton<IEmployeeReadRepository, EmployeeReadRepository>();
             services.AddSingleton<IEmployeeWriteRepository, EmployeeWriteRepository>();
-            services.AddSingleton<IEmployeeUtilityService, EmployeeUtilityService>();
-
-            services.AddTransient<IEmployeeBuilder, EmployeeBuilder>();
+            services.AddSingleton<IEmployeeUtilityRepository, EmployeeUtilityRepository>();
 
             return services;
         }

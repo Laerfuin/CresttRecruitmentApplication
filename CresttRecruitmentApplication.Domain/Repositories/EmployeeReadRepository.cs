@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CresttRecruitmentApplication.Domain.Repositories.Implementation
+namespace CresttRecruitmentApplication.Domain.Repositories
 {
-    public class EmployeeReadRepository : IEmployeeReadRepository
+    internal class EmployeeReadRepository : IEmployeeReadRepository
     {
         public async Task<IEnumerable<Employee>> GetAll()
         {
