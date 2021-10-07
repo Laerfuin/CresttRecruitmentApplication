@@ -1,4 +1,5 @@
-﻿using CresttRecruitmentApplication.Domain.Repositories.FakeDataStores;
+﻿using CresttRecruitmentApplication.Domain.Models.Employee;
+using CresttRecruitmentApplication.Domain.Repositories.FakeDataStores;
 using CresttRecruitmentApplication.Domain.Repositories.Interfaces;
 using System.Linq;
 
@@ -6,16 +7,18 @@ namespace CresttRecruitmentApplication.Domain.Repositories
 {
     internal class EmployeeUtilityRepository : IEmployeeUtilityRepository
     {
-        public bool CheckIfPeselNumberIsTaken(string value)
+        public bool CheckIfPeselNumberIsTaken(EmployeePeselNumber value)
         {
-            return FakeEmployeeStore.Employees.Any(a => a.Pesel.Equals(value));
+            return FakeEmployeeStore.Employees.Any(a => a.PeselNumber.Equals(value));
         }
 
-        public int GetFreeID()
+        public EmployeeIdentityNumber GetHighestTakenIdentityNumber()
         {
-            return FakeEmployeeStore.Employees.Any()
-                ? FakeEmployeeStore.Employees.Max(a => int.Parse(a.ID.Value)) + 1
+            var highestValue = FakeEmployeeStore.Employees.Any()
+                ? FakeEmployeeStore.Employees.Max(a => int.Parse(a.IdentityNumber.Value))
                 : 1;
+
+            return new EmployeeIdentityNumber(highestValue);
         }
     }
 }

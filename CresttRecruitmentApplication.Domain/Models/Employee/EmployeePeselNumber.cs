@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace CresttRecruitmentApplication.Domain.Models.Employee
 {
-    public class EmployeePeselNumber : GenericValueObject<string>
+    public class EmployeePeselNumber : GenericValueObjectWithValidation<string>
     {
         public EmployeePeselNumber(string value) : base(value)
         {

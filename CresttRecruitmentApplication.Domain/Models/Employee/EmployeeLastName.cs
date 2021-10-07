@@ -3,7 +3,7 @@ using System;
 
 namespace CresttRecruitmentApplication.Domain.Models.Employee
 {
-    public class EmployeeLastName : GenericValueObject<string>
+    public class EmployeeLastName : GenericValueObjectWithValidation<string>
     {
         public EmployeeLastName(string value) : base(value)
         {

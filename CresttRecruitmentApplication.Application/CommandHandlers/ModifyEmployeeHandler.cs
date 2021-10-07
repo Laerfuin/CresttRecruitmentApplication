@@ -1,6 +1,5 @@
 ﻿using CresttRecruitmentApplication.Application.Commands;
-using CresttRecruitmentApplication.Domain.Enums;
-using CresttRecruitmentApplication.Domain.Models.Employee;
+using CresttRecruitmentApplication.Application.Exceptions;
 using CresttRecruitmentApplication.Domain.Repositories.Interfaces;
 using MediatR;
 using System;
@@ -20,38 +19,43 @@ namespace CresttRecruitmentApplication.Application.QueryHandlers
             IEmployeeWriteRepository employeeWriteRepository,
             IEmployeeUtilityRepository employeeUtilityRepository)
         {
-            _employeeReadRepository = employeeReadRepository;
-            _employeeWriteRepository = employeeWriteRepository;
-            _employeeUtilityRepository = employeeUtilityRepository;
+            _employeeReadRepository = employeeReadRepository 
+                ?? throw new ArgumentNullException(nameof(employeeReadRepository)); //TODO CR warto sprawdzać czy nie przyszły nulle
+            _employeeWriteRepository = employeeWriteRepository 
+                ?? throw new ArgumentNullException(nameof(employeeWriteRepository));
+            _employeeUtilityRepository = employeeUtilityRepository 
+                ?? throw new ArgumentNullException(nameof(employeeUtilityRepository));
         }
 
         public async Task<Unit> Handle(ModifyEmployeeCommand request, CancellationToken cancellationToken)
         {
-            var existingValue = await _employeeReadRepository.GetById(new Guid(request.Values.Key));
+            /* TODO CR kilka uwag:
+               Rozpatrzmy taki scenariusz:
+                1. próbujesz pobrać pracownika po Id (u nas Key)
+                2. jeśli go nie ma, to rzucasz wyjątek, że nie istnieje (pewnie kod błędu 404 w kontrolerze)
+                3. jeśli jest i pesel ma się zmienić, to sprawdzasz czy już taki nie istnieje u innego pracownika i jeśli tak to ewentualnie rzucasz wyjątek
+                4. jeśli jest ok, to na pracowniku wywołujesz metodę "Modify", która zmienia jego parametry
 
-            var peselNumber = new EmployeePeselNumber(request.Values.Pesel);
+                To idealny scenariusz, którego używamy u nas. ORM nam na to pozwala.
+            */
 
-            if (!peselNumber.Equals(existingValue.Pesel)
-                && _employeeUtilityRepository.CheckIfPeselNumberIsTaken(request.Values.Pesel))
+            var existingValue = await _employeeReadRepository.GetById(request.Id);
+
+            if (existingValue == null)
+                throw new NotFoundException();
+
+            if (!request.PeselNumber.Equals(existingValue.PeselNumber)
+                && _employeeUtilityRepository.CheckIfPeselNumberIsTaken(request.PeselNumber))
             {
-                throw new ArgumentException($"Pesel {request.Values.Pesel} is taken");
+                throw new ArgumentException($"Pesel number {request.PeselNumber.Value} is taken");
             }
 
-            var name = new EmployeeName(request.Values.Name);
-            var lastName = new EmployeeLastName(request.Values.LastName);
-            var dateOfBirth = new EmployeeDateOfBirth(request.Values.DateOfBirth);
-            var gender = new EmployeeGender((GenderType)request.Values.Gender);
-
-            var model = new Employee(
-                existingValue.Key,
-                existingValue.ID,
-                peselNumber,
-                dateOfBirth,
-                lastName,
-                name,
-                gender);
-
-            await _employeeWriteRepository.Modify(model);
+            existingValue.Update(
+                gender: request.Gender,
+                name: request.Name,
+                peselNumber: request.PeselNumber,
+                lastName: request.LastName,
+                dateOfBirth: request.DateOfBirth);
 
             return new Unit();
         }

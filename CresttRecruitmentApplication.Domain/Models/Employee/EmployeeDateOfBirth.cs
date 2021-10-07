@@ -8,9 +8,5 @@ namespace CresttRecruitmentApplication.Domain.Models.Employee
         public EmployeeDateOfBirth(DateTime value) : base(value)
         {
         }
-
-        protected override void Validate(DateTime value)
-        {
-        }
     }
 }

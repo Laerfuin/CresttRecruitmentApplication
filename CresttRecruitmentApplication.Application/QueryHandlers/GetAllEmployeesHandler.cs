@@ -24,11 +24,11 @@ namespace CresttRecruitmentApplication.Application.QueryHandlers
 
             var result = values.Select(a => new ExtendedEmployeeDto
             {
-                ID = a.ID.Value,
+                IdentityNumber = a.IdentityNumber.Value,
                 Name = a.Name.Value,
-                Pesel = a.Pesel.Value,
-                Key = a.Key.ToString(),
-                Gender = (byte)a.Gender.Value,
+                PeselNumber = a.PeselNumber.Value,
+                Id = a.Id.Value,
+                Gender = a.Gender.Value,
                 LastName = a.LastName.Value,
                 DateOfBirth = a.DateOfBirth.Value
             }).ToList();

@@ -12,37 +12,37 @@ namespace CresttRecruitmentApplication.Tests
         [Test]
         public void EmployeeID_CreateWithCorrectStringValue_ShouldPass()
         {
-            Assert.DoesNotThrow(() => new EmployeeID("00000001"));
+            Assert.DoesNotThrow(() => new EmployeeIdentityNumber("00000001"));
         }
 
         [Test]
         public void EmployeeID_CreateWithNullStringValue_ShouldFail()
         {
-            Assert.Throws(typeof(ArgumentNullException), () => new EmployeeID(null));
+            Assert.Throws(typeof(ArgumentNullException), () => new EmployeeIdentityNumber(null));
         }
 
         [Test]
         public void EmployeeID_CreateWithWrongSizedStringValue_ShouldFail()
         {
-            Assert.Throws(typeof(ArgumentException), () => new EmployeeID("000000000000000000000001"));
+            Assert.Throws(typeof(ArgumentException), () => new EmployeeIdentityNumber("000000000000000000000001"));
         }
 
         [Test]
         public void EmployeeID_CreateWithLetters_ShouldFail()
         {
-            Assert.Throws(typeof(ArgumentException), () => new EmployeeID("0dsd0001"));
+            Assert.Throws(typeof(ArgumentException), () => new EmployeeIdentityNumber("0dsd0001"));
         }
 
         [Test]
         public void EmployeeID_CreateWithCorrectNumericValue_ShouldPass()
         {
-            Assert.DoesNotThrow(() => new EmployeeID(763));
+            Assert.DoesNotThrow(() => new EmployeeIdentityNumber(763));
         }
 
         [Test]
         public void EmployeeID_CreateWithWrongSizedNumericValue_ShouldFail()
         {
-            Assert.Throws(typeof(ArgumentException), () => new EmployeeID(199999999));
+            Assert.Throws(typeof(ArgumentOutOfRangeException), () => new EmployeeIdentityNumber(199999999));
         }
 
         [Test]
@@ -94,7 +94,7 @@ namespace CresttRecruitmentApplication.Tests
         {
             Assert.Throws(
                 typeof(ArgumentNullException),
-                () => new Employee(new Guid(), null, null, null, null, null, null));
+                () => new Employee(null, null, null, null, null, null));
         }
 
         [Test]
@@ -110,8 +110,8 @@ namespace CresttRecruitmentApplication.Tests
             var tooLongName = "namenamenamenamenamenamenamenamenamenamenamenamename" +
                 "namenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamename";
 
-            Assert.Throws(typeof(ArgumentException), () => new EmployeeName(tooShortName));
-            Assert.Throws(typeof(ArgumentException), () => new EmployeeName(tooLongName));
+            Assert.Throws(typeof(ArgumentOutOfRangeException), () => new EmployeeName(tooShortName));
+            Assert.Throws(typeof(ArgumentOutOfRangeException), () => new EmployeeName(tooLongName));
         }
 
         [Test]
@@ -135,8 +135,8 @@ namespace CresttRecruitmentApplication.Tests
             var tooLongLastName = "namenamenamenamenamenamenamenamenamenamenamenamename" +
                 "namenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamename";
 
-            Assert.Throws(typeof(ArgumentException), () => new EmployeeID(tooShortLastName));
-            Assert.Throws(typeof(ArgumentException), () => new EmployeeID(tooLongLastName));
+            Assert.Throws(typeof(ArgumentException), () => new EmployeeIdentityNumber(tooShortLastName));
+            Assert.Throws(typeof(ArgumentException), () => new EmployeeIdentityNumber(tooLongLastName));
         }
 
         [Test]

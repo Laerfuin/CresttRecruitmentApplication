@@ -3,7 +3,7 @@ using System;
 
 namespace CresttRecruitmentApplication.Domain.Models.Employee
 {
-    public class EmployeeName : GenericValueObject<string>
+    public class EmployeeName : GenericValueObjectWithValidation<string>
     {
         public EmployeeName(string value) : base(value)
         {
@@ -15,7 +15,7 @@ namespace CresttRecruitmentApplication.Domain.Models.Employee
                 throw new ArgumentNullException(nameof(value));
 
             if (value.Length < 1 || value.Length > 25)
-                throw new ArgumentException($"Value {value} is out of range");
+                throw new ArgumentOutOfRangeException($"Value {value} is out of range"); // TODO CR szczcegół: istnieje exception ArgumentOutOfRangeException
         }
     }
 }

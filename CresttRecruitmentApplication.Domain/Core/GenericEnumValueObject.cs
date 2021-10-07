@@ -2,7 +2,7 @@
 
 namespace CresttRecruitmentApplication.Domain.Core
 {
-    public abstract class GenericEnumValueObject<TType> : GenericValueObject<TType> where TType : Enum
+    public abstract class GenericEnumValueObject<TType> : GenericValueObjectWithValidation<TType> where TType : Enum// TODO CR super, że robisz VO dla enuma!
     {
         protected GenericEnumValueObject(TType value) : base(value)
         {

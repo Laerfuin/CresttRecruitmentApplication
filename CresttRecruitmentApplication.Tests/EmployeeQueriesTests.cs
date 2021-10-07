@@ -1,4 +1,5 @@
-﻿using CresttRecruitmentApplication.Application.Queries;
+﻿using CresttRecruitmentApplication.Application.Exceptions;
+using CresttRecruitmentApplication.Application.Queries;
 using CresttRecruitmentApplication.Application.QueryHandlers;
 using CresttRecruitmentApplication.Domain.Enums;
 using CresttRecruitmentApplication.Domain.Models.Employee;
@@ -28,7 +29,7 @@ namespace CresttRecruitmentApplication.Tests
 
         private void AdditionalSetUp()
         {
-            var id = new EmployeeID(1);
+            var id = new EmployeeIdentityNumber(1);
             var name = new EmployeeName("Jan");
             var peselNumber = new EmployeePeselNumber("12345678912");
             var lastName = new EmployeeLastName("Kowalski");
@@ -36,7 +37,6 @@ namespace CresttRecruitmentApplication.Tests
             var gender = new EmployeeGender(GenderType.Female);
 
             var model = new Employee(
-                Guid.NewGuid(),
                 id,
                 peselNumber,
                 dateOfBirth,
@@ -52,7 +52,7 @@ namespace CresttRecruitmentApplication.Tests
         {
             AdditionalSetUp();
 
-            var existingEmployeeKey = fakeEmployeeStore.First().Key;
+            var existingEmployeeKey = fakeEmployeeStore.First().Id;
 
             _employeeRepository
                 .Setup(a => a.GetAll())
@@ -68,7 +68,7 @@ namespace CresttRecruitmentApplication.Tests
                 new CancellationToken());
 
             Assert.AreEqual(employees.Count(), 1);
-            Assert.AreEqual(employees.First().Key.ToString(), existingEmployeeKey.ToString());
+            Assert.AreEqual(employees.First().Id, existingEmployeeKey.Value);
         }
 
         [Test]
@@ -76,41 +76,41 @@ namespace CresttRecruitmentApplication.Tests
         {
             AdditionalSetUp();
 
-            var existingEmployeeKey = fakeEmployeeStore.First().Key;
+            var existingEmployeeId = fakeEmployeeStore.First().Id;
 
             _employeeRepository
-                .Setup(a => a.GetById(existingEmployeeKey))
+                .Setup(a => a.GetById(existingEmployeeId))
                 .Returns(Task.Run(() =>
                 {
-                    return fakeEmployeeStore.FirstOrDefault(a => a.Key == existingEmployeeKey);
+                    return fakeEmployeeStore.FirstOrDefault(a => a.Id == existingEmployeeId);
                 }));
 
-            var handler = new GetEmployeeByKeyHandler(_employeeRepository.Object);
+            var handler = new GetEmployeeByIdHandler(_employeeRepository.Object);
 
             var employee = await handler.Handle(
-                new GetEmployeeByKeyQuery(existingEmployeeKey),
+                new GetEmployeeByIdQuery(existingEmployeeId),
                 new CancellationToken());
 
             Assert.NotNull(employee);
-            Assert.AreEqual(employee.Key.ToString(), existingEmployeeKey.ToString());
+            Assert.AreEqual(employee.Id, existingEmployeeId.Value);
         }
 
         [Test]
-        public void GetEmployeeByKeyHandler_WithIncorrectKey_ShouldFail()
+        public void GetEmployeeByIdHandler_WithIncorrectId_ShouldFail()
         {
-            var incorrectKey = new Guid();
+            var incorrectId = new EmployeeId(new Guid());
 
             _employeeRepository
-                .Setup(a => a.GetById(incorrectKey))
+                .Setup(a => a.GetById(incorrectId))
                 .Returns(Task.Run(() =>
                 {
-                    return fakeEmployeeStore.FirstOrDefault(a => a.Key == incorrectKey);
+                    return fakeEmployeeStore.FirstOrDefault(a => a.Id == incorrectId);
                 }));
 
-            var handler = new GetEmployeeByKeyHandler(_employeeRepository.Object);
+            var handler = new GetEmployeeByIdHandler(_employeeRepository.Object);
 
-            Assert.ThrowsAsync<NullReferenceException>(async () => await handler.Handle(
-                new GetEmployeeByKeyQuery(incorrectKey),
+            Assert.ThrowsAsync<NotFoundException>(async () => await handler.Handle(
+                new GetEmployeeByIdQuery(incorrectId),
                 new CancellationToken()));
         }
     }

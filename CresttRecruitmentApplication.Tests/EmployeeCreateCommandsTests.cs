@@ -1,10 +1,8 @@
 ﻿using CresttRecruitmentApplication.Application.Commands;
-using CresttRecruitmentApplication.Application.Dtos;
 using CresttRecruitmentApplication.Application.QueryHandlers;
 using CresttRecruitmentApplication.Domain.Enums;
 using CresttRecruitmentApplication.Domain.Models.Employee;
 using CresttRecruitmentApplication.Domain.Repositories.Interfaces;
-using CresttRecruitmentApplication.Tests.Extensions;
 using Moq;
 using NUnit.Framework;
 using System;
@@ -30,37 +28,44 @@ namespace CresttRecruitmentApplication.Tests
         [Test]
         public void CreateEmployeeHandler_WithTakenPeselNumber_ShouldThrowAnException()
         {
-            _employeeUtilityRepository.SetPeselCheckResult(true);
+            var takenPeselNumber = new EmployeePeselNumber("12345678912");
 
-            var command = new CreateEmployeeCommand(new CreateEmployeeDto());
+            _employeeUtilityRepository
+                .Setup(a => a.CheckIfPeselNumberIsTaken(takenPeselNumber))
+                .Returns(true);
+
+            var command = new CreateEmployeeCommand(null, null, null, null, takenPeselNumber);
             var handler = new CreateEmployeeHandler(
                 _employeeWriteRepository.Object,
                 _employeeUtilityRepository.Object);
 
-            Assert.ThrowsAsync(
+            var ex = Assert.ThrowsAsync(
                 typeof(ArgumentException),
                 async () => await handler.Handle(command, new CancellationToken()));
 
-            _employeeUtilityRepository.Verify(a => a.CheckIfPeselNumberIsTaken(It.IsAny<string>()));
+            Assert.AreEqual(ex.Message, $"Pesel {takenPeselNumber.Value} is taken");
+
+            _employeeUtilityRepository.Verify(a => a.CheckIfPeselNumberIsTaken(takenPeselNumber));
         }
 
         [Test]
         public void CreateEmployeeHandler_WithCorrectValues_ShouldPass()
         {
-            var command = new CreateEmployeeCommand(new CreateEmployeeDto
-            {
-                Name = "Jan",
-                LastName = "Kowalski",
-                DateOfBirth = DateTime.UtcNow,
-                Gender = (byte)GenderType.Male,
-                Pesel = "12345678912"
-            });
+            var command = new CreateEmployeeCommand(
+                new EmployeeName("Jan"),
+                new EmployeeGender(GenderType.Male),
+                new EmployeeLastName("Kowalski"),
+                new EmployeeDateOfBirth(new DateTime(2000, 10, 10)),
+                new EmployeePeselNumber("12345678912"));
 
-            _employeeUtilityRepository.SetPeselCheckResult(false);
-            _employeeUtilityRepository.SetGetIdResult(1);
-
+            _employeeUtilityRepository
+                .Setup(a => a.CheckIfPeselNumberIsTaken(command.PeselNumber))
+                .Returns(false);
+            _employeeUtilityRepository
+                .Setup(a => a.GetHighestTakenIdentityNumber())
+                .Returns(new EmployeeIdentityNumber(1));
             _employeeWriteRepository
-                .Setup(a => a.Create(It.IsAny<Employee>()))
+                .Setup(a => a.Insert(It.IsAny<Employee>()))
                 .Returns(Task.CompletedTask);
 
             var handler = new CreateEmployeeHandler(
@@ -69,39 +74,36 @@ namespace CresttRecruitmentApplication.Tests
 
             Assert.DoesNotThrowAsync(async () => await handler.Handle(command, new CancellationToken()));
 
-            _employeeWriteRepository.Verify(a => a.Create(It.IsAny<Employee>()));
+            _employeeWriteRepository.Verify(a =>
+               a.Insert(It.Is<Employee>(e => 
+                    e.Name.Equals(command.Name) 
+                    && e.LastName.Equals(command.LastName)
+                    && e.Gender.Equals(command.Gender)
+                    && e.DateOfBirth.Equals(command.DateOfBirth)
+                    && e.PeselNumber.Equals(command.PeselNumber)
+                   )));
         }
 
         [Test]
         public void CreateEmployeeHandler_WithNoValues_ShouldThrowAnException()
         {
-            var command = new CreateEmployeeCommand(new CreateEmployeeDto());
+            var command = new CreateEmployeeCommand(null, null, null, null, null);
             var handler = new CreateEmployeeHandler(
                 _employeeWriteRepository.Object,
                 _employeeUtilityRepository.Object);
 
-            _employeeUtilityRepository.SetPeselCheckResult(false);
-            _employeeUtilityRepository.SetGetIdResult(1);
+            _employeeUtilityRepository
+                .Setup(a => a.CheckIfPeselNumberIsTaken(command.PeselNumber))
+                .Returns(false);
+            _employeeUtilityRepository
+                .Setup(a => a.GetHighestTakenIdentityNumber())
+                .Returns(new EmployeeIdentityNumber(1));
 
-            Assert.ThrowsAsync(
+            var ex = Assert.ThrowsAsync(
                 typeof(ArgumentNullException),
                 async () => await handler.Handle(command, new CancellationToken()));
-        }
 
-        [Test]
-        public void CreateEmployeeHandler_WithMissingValues_ShouldThrowAnException()
-        {
-            var command = new CreateEmployeeCommand(new CreateEmployeeDto { Name = "" });
-            var handler = new CreateEmployeeHandler(
-                _employeeWriteRepository.Object,
-                _employeeUtilityRepository.Object);
-
-            _employeeUtilityRepository.SetPeselCheckResult(false);
-            _employeeUtilityRepository.SetGetIdResult(1);
-
-            Assert.ThrowsAsync(
-                typeof(ArgumentException),
-                async () => await handler.Handle(command, new CancellationToken()));
+            Assert.AreEqual((ex as ArgumentNullException).ParamName, "name");
         }
     }
 }

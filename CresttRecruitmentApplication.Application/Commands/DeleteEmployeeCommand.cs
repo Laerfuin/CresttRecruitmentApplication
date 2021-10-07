@@ -1,15 +1,15 @@
-﻿using MediatR;
-using System;
+﻿using CresttRecruitmentApplication.Domain.Models.Employee;
+using MediatR;
 
 namespace CresttRecruitmentApplication.Application.Commands
 {
     public class DeleteEmployeeCommand : IRequest
     {
-        public Guid Key { get; }
+        public EmployeeId Id { get; }
 
-        public DeleteEmployeeCommand(Guid key)
+        public DeleteEmployeeCommand(EmployeeId id)
         {
-            Key = key;
+            Id = id;
         }
     }
 }

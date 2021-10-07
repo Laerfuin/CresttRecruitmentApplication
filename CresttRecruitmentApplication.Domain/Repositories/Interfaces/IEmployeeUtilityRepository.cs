@@ -1,9 +1,11 @@
-﻿namespace CresttRecruitmentApplication.Domain.Repositories.Interfaces
+﻿using CresttRecruitmentApplication.Domain.Models.Employee;
+
+namespace CresttRecruitmentApplication.Domain.Repositories.Interfaces
 {
     public interface IEmployeeUtilityRepository
     {
-        bool CheckIfPeselNumberIsTaken(string value);
+        bool CheckIfPeselNumberIsTaken(EmployeePeselNumber value);
 
-        int GetFreeID();
+        EmployeeIdentityNumber GetHighestTakenIdentityNumber();
     }
 }
